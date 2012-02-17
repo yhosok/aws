@@ -1,0 +1,45 @@
+name:   aws
+version:           0.0.0
+cabal-version:     >= 1.6
+build-type:        Simple
+
+library
+    Buildable: True
+    exposed-modules: Action
+    other-modules: AWS 
+                 , Filters
+                 , Config
+                 , Request
+                 , Request.DescribeInstances
+                 , Request.DescribeSpotInstanceRequests
+                 , Request.RequestSpotInstances
+                 , Request.RequestTH
+                 , Request.RequestDefParser
+                 , Util
+    build-depends: base
+                 , containers
+                 , mtl
+                 , filepath
+                 , directory
+                 , transformers
+                 , text
+                 , bytestring
+                 , xml-conduit
+                 , http-conduit
+                 , failure
+                 , unix
+                 , old-locale
+                 , time
+                 , HTTP
+                 , dataenc
+                 , SHA
+                 , http-types
+                 , blaze-builder
+                 , base64-bytestring
+                 , data-object
+                 , data-object-yaml
+                 , data-default
+                 , template-haskell
+                 , syb
+                 , parsec
+                 , monad-control

@@ -1,0 +1,11 @@
+/
+dist
+static/tmp
+*~
+#*
+*sqlite3
+*.aes
+.static-cache
+.dist-scion
+cabal-dev
+config.yml
