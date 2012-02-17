@@ -1,0 +1,5 @@
+secKey : "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+accKey : "xxxxxxxxxxxxxxxxxx"
+httpMethod : "POST"
+host : "ec2.ap-northeast-1.amazonaws.com"
+path : "/"

@@ -8,4 +8,3 @@ static/tmp
 .static-cache
 .dist-scion
 cabal-dev
-config.yml
