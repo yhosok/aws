@@ -19,7 +19,7 @@ data AWSConfig = AWSConfig { secKey :: ByteString
                            } deriving (Show)
 
 mkCommonP :: ByteString -> QueryText
-mkCommonP accKey = [("Version",Just "2011-11-01"),
+mkCommonP accKey = [("Version",Just "2011-12-15"),
                     ("SignatureVersion",Just "2"),
                     ("SignatureMethod",Just "HmacSHA256"),
                     ("AWSAccessKeyId",Just $ decodeUtf8 accKey)]
