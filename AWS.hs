@@ -1,8 +1,8 @@
 {-# LANGUAGE DeriveDataTypeable, FlexibleContexts, OverloadedStrings #-}
 module AWS 
        (
-         run,
-         runWithFilter
+         run
+       , runWithFilter
        )
        where
 
@@ -10,7 +10,7 @@ import qualified Data.ByteString as S
 import qualified Data.ByteString.Char8 as S8
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.Char8 as L8
-import Data.ByteString.Base64.URL (encode)
+import Data.ByteString.Base64 (encode)
 import qualified Blaze.ByteString.Builder as Builder
 import Control.Monad.IO.Class (MonadIO (liftIO))
 import Data.Digest.Pure.SHA
@@ -20,7 +20,6 @@ import Network.HTTP.Types (renderQuery,queryTextToQuery,Query,QueryText,
 import Data.List
 import Data.Time
 import qualified Data.Text as T
-import Data.Text.Encoding (encodeUtf8)
 import Data.Function (on)
 import Data.Typeable (Typeable)
 import System.Locale
@@ -32,19 +31,7 @@ import Data.Maybe (isJust)
 import qualified Config
 import Filters
 
-import DebugUtil
-        
---for test
-import Request
-import qualified Request.DescribeInstances as DI
-
-test :: (ActionParam a) => a -> Filter b -> IO b
-test p f = runWithFilter param f
-  where param = actionParam p
-
-descInstance = test (def :: DI.DescribeInstances) instanceId
-descInstance' = test (def {DI.instanceId = Just ["i-59d47459"]}) instanceId
---------
+--import DebugUtil
 
 createSign :: Config.AWSConfig -> QueryText -> S.ByteString
 createSign conf = encode . calc . signStr . renderQuery' . queryTextToQuery . sortParam
@@ -69,8 +56,8 @@ queryParam :: String -> QueryText -> Config.AWSConfig -> Query
 queryParam ts p conf = ("Signature",Just $ createSign conf p') : queryTextToQuery p'
   where p' = ("Timestamp",Just $ T.pack ts) : p ++ Config.commonParam conf
 
---renderQuery' p = renderQuery False (filter (\(_,mv) -> isJust mv) p)
-renderQuery' p = renderQuery False p
+renderQuery' = renderQuery False . filter (isJust . snd)
+--renderQuery' = renderQuery False
 
 data AWSException = AWSException L.ByteString deriving (Show, Typeable)
 instance Exception AWSException
@@ -81,24 +68,21 @@ run p = do
   t <- liftIO timestamp
   conf <- liftIO Config.loadConf
   let p' = queryParam t p conf
-  --liftIO $ print  p'
---  simpleHttp .$. (S8.unpack $ reqUrl conf p')
+--  simpleHttp (S8.unpack $ reqUrl conf p')
   Response sc h b <-  liftIO $ withManager $ httpLbs (request p' conf)
-  return b
   if status200 <= sc && sc < status300
     then return b
     else do
       failure $ AWSException b
   where 
     timestamp = do utc_time <- getCurrentTime
-                   return $ fmttm utc_time
-    fmttm = formatTime defaultTimeLocale "%Y-%m-%dT%TZ"
+                   return $ formattm utc_time
+    formattm = formatTime defaultTimeLocale "%Y-%m-%dT%TZ"
     request p conf = def { host = Config.host conf
                          , port = 443
                          , secure = True
                          , requestHeaders = headers
                          , path = Config.path conf
-                         --, queryString = renderQuery False p
                          , queryString = renderQuery' p
                          , method = Config.httpMethod conf
                          , checkStatus =  \s hs -> Nothing

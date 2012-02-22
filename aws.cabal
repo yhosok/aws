@@ -16,6 +16,10 @@ library
                  , Request.RequestTH
                  , Request.RequestDefParser
                  , Util
+
+executable        aws
+    main-is:       main.hs
+
     build-depends: base
                  , containers
                  , mtl
