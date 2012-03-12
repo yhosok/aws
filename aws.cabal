@@ -40,8 +40,7 @@ executable        aws
                  , http-types
                  , blaze-builder
                  , base64-bytestring
-                 , data-object
-                 , data-object-yaml
+                 , yaml
                  , data-default
                  , template-haskell
                  , syb
