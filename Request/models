@@ -1,8 +1,0 @@
-Test
-    field1 String True
-    field2 List String True
-    firld3 List Data Test2 False
-Test2
-    field21 String False
-    field22 List Int True
-    field23 Int False
