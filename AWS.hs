@@ -69,7 +69,7 @@ run p = do
   conf <- liftIO Config.loadConf
   let p' = queryParam t p conf
 --  simpleHttp (S8.unpack $ reqUrl conf p')
-  Response sc h b <-  liftIO $ withManager $ httpLbs (request p' conf)
+  Response sc _ h b <-  liftIO $ withManager $ httpLbs (request p' conf)
   if status200 <= sc && sc < status300
     then return b
     else do
