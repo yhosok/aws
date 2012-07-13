@@ -1,17 +1,18 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE NoImplicitPrelude, OverloadedStrings #-}
 module Filters 
        (
          module Filters
        )
        where
 
+import ClassyPrelude
+
+import Prelude (head)
+
 import Text.XML
 import Text.XML.Cursor
-import Data.Text (Text)
-import qualified Data.ByteString.Lazy as L
-import qualified Data.ByteString.Lazy.Char8 as L8
 
-extract :: Filter a -> L.ByteString -> a
+extract :: Filter a -> LByteString -> a
 extract f = f . fromDocument . doc def
   where doc = parseLBS_
 

@@ -1,6 +1,10 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 module Request.RequestDefParser where
 
+import ClassyPrelude hiding (readFile)
+
+import Prelude (String, readFile)
+
 import Text.Parsec
 import Text.Parsec.String
 

@@ -1,6 +1,8 @@
 {-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
 module Request.DescribeSpotInstanceRequests where
 
+import ClassyPrelude
+
 import Data.Text (Text,pack)
 import Control.Applicative
 import Data.Maybe (catMaybes)

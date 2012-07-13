@@ -1,9 +1,9 @@
-{-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
+{-# LANGUAGE NoImplicitPrelude, QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
 module Request.RequestSpotInstances where
 
-import Data.Text (Text,pack)
+import ClassyPrelude
+
 import Data.Char (toLower)
-import Control.Applicative
 import Data.Maybe (catMaybes)
 import Data.Default (Default (def))
 import Data.Time (UTCTime)
@@ -70,7 +70,7 @@ data InstanceType = M1_small
 
 instance ToParam InstanceType where
   toParam it =  [("", Just $ val it)]
-    where val = pack . map rep . show
+    where val = pack . fmap rep . show
           rep c | c == '_' = '.'
                 | otherwise = toLower c
 

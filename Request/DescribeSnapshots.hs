@@ -1,7 +1,8 @@
 {-# LANGUAGE OverloadedStrings, QuasiQuotes, TemplateHaskell #-}
 module Request.DescribeSnapshots where
 
-import Data.Text (Text)
+import ClassyPrelude
+
 import Data.Default (Default (def))
 
 import Request

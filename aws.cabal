@@ -17,8 +17,7 @@ library
                  , Request.RequestDefParser
                  , Util
 
-executable        aws
-    main-is:       main.hs
+    extensions: NoImplicitPrelude
 
     build-depends: base
                  , containers
@@ -35,7 +34,6 @@ executable        aws
                  , old-locale
                  , time
                  , HTTP
-                 , dataenc
                  , SHA
                  , http-types
                  , blaze-builder
@@ -46,3 +44,7 @@ executable        aws
                  , syb
                  , parsec
                  , monad-control
+                 , classy-prelude
+
+executable        aws
+    main-is:       main.hs

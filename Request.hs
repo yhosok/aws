@@ -1,23 +1,21 @@
-{-# LANGUAGE TypeSynonymInstances, OverloadedStrings #-}
+{-# LANGUAGE NoImplicitPrelude, TypeSynonymInstances, OverloadedStrings #-}
 module Request where
 
-import qualified Data.Text as T
-import Control.Arrow (first)
+import ClassyPrelude
 import Data.Time
 import Network.HTTP.Types (QueryText)
-import Control.Arrow(second)
 
 import Util
 
 class (ToParam a) => ActionParam a where
-  actionName :: a -> T.Text
+  actionName :: a -> Text
   actionParam :: a -> QueryText
   actionParam a = ("Action", Just $ actionName a) : toParam a
 
 class ToParam a where
   toParam :: a -> QueryText
 
-instance ToParam T.Text where
+instance ToParam Text where
   toParam bs = [("",Just bs)]
   
 instance ToParam Int where
@@ -31,19 +29,19 @@ instance (ToParam a) => ToParam (Maybe a) where
   toParam Nothing = []
 
 instance (ToParam a) => ToParam [a] where
-  toParam vs = concat $ zipWith mk  [1..] vs
+  toParam = concat . zipWith mk  [1..]
     where mk idx = toParamWithPrefix (toT idx)
 
-toT :: (Show a) => a -> T.Text
-toT = T.pack . show
+toT :: (Show a) => a -> Text
+toT = pack . show
 
 toShowParam :: (Show a) => a -> QueryText
-toShowParam = (:[]) . second Just . T.break (==' ') . T.pack . show
+toShowParam = (:[]) . second Just . break (==' ') . pack . show
 
-addPrefix :: T.Text -> (T.Text, a) -> (T.Text, a)
+addPrefix :: Text -> (Text, a) -> (Text, a)
 addPrefix = first . ap
   where ap pfx "" = pfx
-        ap pfx x = T.concat [pfx ,".",x]
+        ap pfx x = concat [pfx ,".",x]
 
-toParamWithPrefix :: (ToParam a) => T.Text -> a -> QueryText
+toParamWithPrefix :: (ToParam a) => Text -> a -> QueryText
 toParamWithPrefix pfx = fmap (addPrefix pfx) . toParam

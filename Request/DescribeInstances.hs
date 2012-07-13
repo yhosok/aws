@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings, QuasiQuotes, TemplateHaskell #-}
 module Request.DescribeInstances where
 
+import ClassyPrelude
+
 import Data.Text (Text)
 import Control.Applicative
 import Data.Default (Default (def))

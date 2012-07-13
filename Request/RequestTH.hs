@@ -1,13 +1,15 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE NoImplicitPrelude, TemplateHaskell #-}
 module Request.RequestTH where
+
+import ClassyPrelude
+
+import Prelude (String, undefined)
 
 import Language.Haskell.TH
 import Language.Haskell.TH.Syntax
 import Language.Haskell.TH.Quote
 import Language.Haskell.TH.Ppr
 
-import Control.Applicative
-import Data.Maybe (catMaybes)
 import Data.Default (Default (def))
 import qualified Data.Text as T(Text,pack)
 import Network.HTTP.Types (QueryText)

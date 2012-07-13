@@ -1,13 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Config where
 
-import Network.HTTP (RequestMethod (..))
+import ClassyPrelude
+
 import Data.Yaml
-import Data.ByteString.Char8 (ByteString,pack)
-import Data.Text (Text)
 import Data.Text.Encoding (decodeUtf8)
-import Control.Monad (join)
-import Control.Applicative
 import Network.HTTP.Types (QueryText)
 
 data AWSConfig = AWSConfig { secKey :: ByteString
@@ -41,7 +38,7 @@ parseConfig o = do
     { secKey = sec
     , accKey = acc
     , host = h
-    , httpMethod = pack . show $ POST
+    , httpMethod = "POST"
     , path = p
     , commonParam = mkCommonP acc
     }

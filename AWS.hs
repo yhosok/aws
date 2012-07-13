@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveDataTypeable, FlexibleContexts, OverloadedStrings #-}
+{-# LANGUAGE NoImplicitPrelude, DeriveDataTypeable, FlexibleContexts, OverloadedStrings #-}
 module AWS 
        (
          run
@@ -6,26 +6,21 @@ module AWS
        )
        where
 
-import qualified Data.ByteString as S
-import qualified Data.ByteString.Char8 as S8
-import qualified Data.ByteString.Lazy as L
-import qualified Data.ByteString.Lazy.Char8 as L8
+import ClassyPrelude
+
+import Data.ByteString (intercalate)
 import Data.ByteString.Base64 (encode)
 import qualified Blaze.ByteString.Builder as Builder
-import Control.Monad.IO.Class (MonadIO (liftIO))
 import Data.Digest.Pure.SHA
 import Network.HTTP.Conduit
 import Network.HTTP.Types (renderQuery,queryTextToQuery,Query,QueryText,
                            status200,status300)
-import Data.List
+import Data.List (sortBy)
 import Data.Time
-import qualified Data.Text as T
 import Data.Function (on)
 import Data.Typeable (Typeable)
 import System.Locale
 import Control.Failure
-import Control.Exception (Exception, SomeException, toException)
-import Control.Arrow (second)
 import Data.Maybe (isJust)
 
 import qualified Config
@@ -33,9 +28,9 @@ import Filters
 
 --import DebugUtil
 
-createSign :: Config.AWSConfig -> QueryText -> S.ByteString
+createSign :: Config.AWSConfig -> QueryText -> ByteString
 createSign conf = encode . calc . signStr . renderQuery' . queryTextToQuery . sortParam
-  where signStr q = S.intercalate "\n" [ Config.httpMethod conf
+  where signStr q = intercalate "\n" [ Config.httpMethod conf
                                        , Config.host conf
                                        , Config.path conf
                                        , q
@@ -45,25 +40,25 @@ createSign conf = encode . calc . signStr . renderQuery' . queryTextToQuery . so
         toS = Builder.toByteString . Builder.fromLazyByteString
         toL = Builder.toLazyByteString . Builder.fromByteString
 
-reqUrl :: Config.AWSConfig -> Query -> S.ByteString
-reqUrl conf p = "https://" `S.append` 
-                Config.host conf `S.append` 
-                Config.path conf `S.append` 
-                "?" `S.append` 
+reqUrl :: Config.AWSConfig -> Query -> ByteString
+reqUrl conf p = "https://" `mappend` 
+                Config.host conf `mappend` 
+                Config.path conf `mappend` 
+                "?" `mappend` 
                 renderQuery' p
 
-queryParam :: String -> QueryText -> Config.AWSConfig -> Query
+queryParam :: [Char] -> QueryText -> Config.AWSConfig -> Query
 queryParam ts p conf = ("Signature",Just $ createSign conf p') : queryTextToQuery p'
-  where p' = ("Timestamp",Just $ T.pack ts) : p ++ Config.commonParam conf
+  where p' = ("Timestamp",Just $ pack ts) : p ++ Config.commonParam conf
 
 renderQuery' = renderQuery False . filter (isJust . snd)
 --renderQuery' = renderQuery False
 
-data AWSException = AWSException L.ByteString deriving (Show, Typeable)
+data AWSException = AWSException LByteString deriving (Show, Typeable)
 instance Exception AWSException
 
 run :: (MonadIO m, Failure AWSException m) =>
-       QueryText -> m L.ByteString
+       QueryText -> m LByteString
 run p = do
   t <- liftIO timestamp
   conf <- liftIO Config.loadConf
