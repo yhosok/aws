@@ -1,4 +1,4 @@
-{-# LANGUAGE NoImplicitPrelude, DeriveDataTypeable, FlexibleContexts, OverloadedStrings #-}
+{-# LANGUAGE DeriveDataTypeable, FlexibleContexts, OverloadedStrings #-}
 module AWS 
        (
          run
@@ -41,10 +41,10 @@ createSign conf = encode . calc . signStr . renderQuery' . queryTextToQuery . so
         toL = Builder.toLazyByteString . Builder.fromByteString
 
 reqUrl :: Config.AWSConfig -> Query -> ByteString
-reqUrl conf p = "https://" `mappend` 
-                Config.host conf `mappend` 
-                Config.path conf `mappend` 
-                "?" `mappend` 
+reqUrl conf p = "https://" ++ 
+                Config.host conf ++ 
+                Config.path conf ++ 
+                "?" ++ 
                 renderQuery' p
 
 queryParam :: [Char] -> QueryText -> Config.AWSConfig -> Query

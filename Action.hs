@@ -1,12 +1,12 @@
-{-# LANGUAGE NoImplicitPrelude, GeneralizedNewtypeDeriving, OverloadedStrings #-}
-module Action where
+{-# LANGUAGE GeneralizedNewtypeDeriving, OverloadedStrings #-}
+module Action
+       (
+         runAction
+       , descInstance
+       )
+       where
 
 import ClassyPrelude
-
-import Prelude hiding (until)
-import Control.Monad.Error hiding (when)
-import Control.Monad.Trans.Control
-import Control.Applicative (Applicative, (<$>))
 
 import System.Posix.Unistd (sleep)
 import Data.Default (Default (def))

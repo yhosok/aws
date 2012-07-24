@@ -1,4 +1,4 @@
-{-# LANGUAGE NoImplicitPrelude, TypeSynonymInstances, OverloadedStrings #-}
+{-# LANGUAGE TypeSynonymInstances, OverloadedStrings #-}
 module Request where
 
 import ClassyPrelude

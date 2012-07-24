@@ -17,9 +17,3 @@ DescribeInstances
   InstanceId List String No
   Filter_ List Data Filter No
 |])
-
-test = def {filter_ = Just 
-               [def {name = "aaa", value = ["bbb","ccc","ddd"]
-                    }
-               ]
-           }

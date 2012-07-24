@@ -1,6 +1,6 @@
 name:   aws
 version:           0.0.0
-cabal-version:     >= 1.6
+cabal-version:     >= 1.8
 build-type:        Simple
 
 library
@@ -10,6 +10,7 @@ library
                  , Filters
                  , Config
                  , Request
+                 , Request.Filter
                  , Request.DescribeInstances
                  , Request.DescribeSpotInstanceRequests
                  , Request.RequestSpotInstances
@@ -47,4 +48,7 @@ library
                  , classy-prelude
 
 executable        aws
-    main-is:       main.hs
+    main-is:       ../main.hs
+    hs-source-dirs:    dist
+    build-depends:     base
+                     , aws
