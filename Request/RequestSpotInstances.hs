@@ -90,9 +90,9 @@ getDefault price image instype =
             }
       }
 
-test = 
-  def { launchSpecification = 
-          def { blockDeviceMapping = 
-                   Just [ def { deviceName = Just "test", ebs = Just def } ]
-              }
-      }
+-- test = 
+--   def { launchSpecification = 
+--           def { blockDeviceMapping = 
+--                    Just [ def { deviceName = Just "test", ebs = Just def } ]
+--               }
+--       }

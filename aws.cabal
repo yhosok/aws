@@ -46,9 +46,10 @@ library
                  , parsec
                  , monad-control
                  , classy-prelude
+                 , free
 
-executable        aws
-    main-is:       ../main.hs
-    hs-source-dirs:    dist
-    build-depends:     base
-                     , aws
+-- executable        aws
+--     main-is:       ../main.hs
+--     hs-source-dirs:    dist
+--     build-depends:     base
+--                      , aws

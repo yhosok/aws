@@ -1,4 +1,4 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving, OverloadedStrings #-}
+{-# LANGUAGE DeriveFunctor, OverloadedStrings #-}
 module Action
        (
          runAction
@@ -6,54 +6,94 @@ module Action
        )
        where
 
-import ClassyPrelude
+import ClassyPrelude hiding (until)
 
 import System.Posix.Unistd (sleep)
 import Data.Default (Default (def))
+import Control.Monad.Free
 
 import AWS
 import Filters
 import Request
-import Request.RequestSpotInstances
+import qualified Request.RequestSpotInstances as RSI
 import qualified Request.DescribeSpotInstanceRequests as DSIR
 import qualified Request.DescribeInstances as DI
 import qualified Request.DescribeSnapshots as DS
 
+data ActionF a next
+  = DescribeInstances DI.DescribeInstances (Filter a) (a -> next)
+  | DescribeSnapshots DS.DescribeSnapshots (Filter a) (a -> next)
+  | RequestSpotInstances RSI.RequestSpotInstances (Filter a) (a -> next)
+  | DescribeSpotInstanceRequests DSIR.DescribeSpotInstanceRequests (Filter a) (a -> next)
+  | Wait next
+  | Exit
+  deriving (Functor)
 
-newtype Action m a = Action { runAction :: m a }
-                   deriving (Functor, Applicative, Monad, MonadIO)
+type Action a = Free (ActionF a)
 
---runAction = runErrorT . unAction
+describeInstances :: DI.DescribeInstances -> Filter a -> Action a a
+describeInstances p fil = liftF $ DescribeInstances p fil id
 
-until :: (MonadIO m) => Action m a -> (a -> Bool) -> Action m a
+describeSnapshots :: DS.DescribeSnapshots -> Filter a -> Action a a
+describeSnapshots p fil = liftF $ DescribeSnapshots p fil id
+
+requestSpotInstances :: RSI.RequestSpotInstances -> Filter a -> Action a a
+requestSpotInstances p fil = liftF $ RequestSpotInstances p fil id
+
+describeSpotInstanceRequests :: DSIR.DescribeSpotInstanceRequests -> Filter a -> Action a a
+describeSpotInstanceRequests p fil = liftF $ DescribeSpotInstanceRequests p fil id
+
+wait :: Action a ()
+wait = liftF $ Wait ()
+
+exit :: Action a r
+exit = liftF Exit
+
+runAction :: (Show r, Show a) => Action a r -> IO ()
+runAction (Pure r) = print r
+runAction (Free (DescribeInstances p fil f)) =  runAction' p fil f
+runAction (Free (DescribeSnapshots p fil f)) =  runAction' p fil f
+runAction (Free (RequestSpotInstances p fil f))  =  runAction' p fil f
+runAction (Free (DescribeSpotInstanceRequests p fil f)) = runAction' p fil f
+runAction (Free (Wait t)) = liftIO $ sleep 10 >> runAction t
+runAction (Free Exit) = print "done"
+
+runAction' p filter f = runActionAws p filter >>= runAction . f
+
+runActionAws p filter = liftIO $ runWithFilter param filter
+  where param = actionParam p
+
+-- showProgram :: (Show r) => Action Text r -> Text
+-- showProgram (Pure r) = 
+--   "return " ++ show r ++ "\n"
+-- showProgram (Free (DescribeInstances p fil f)) =
+--   "DescribeInstances\n" ++ showProgram (f "")
+-- showProgram (Free (DescribeSnapshots p fil f)) = 
+--   "DescribeSnapshots\n" ++ showProgram (f "")
+-- showProgram (Free (RequestSpotInstances p fil f)) =
+--   "RequestSpotInstances\n" ++ showProgram (f "")
+-- showProgram (Free (DescribeSpotInstanceRequests p fil f)) =
+--   "DescribeSpotInstanceRequests\n" ++ showProgram (f "")
+-- showProgram (Free (Wait r)) =
+--   "wait...\n " ++ showProgram r
+-- showProgram (Free Exit) =
+--   "exit\n "
+
+until :: Action a b -> (b -> Bool) -> Action a b
 until a pred = do
   v <- a
   if pred v then return v else
-    do
-      liftIO $ sleep 5
-      until a pred
+    do wait
+       until a pred
 
-when :: (MonadIO m) => Action m a -> (a -> Bool) -> Action m b -> Action m b
+when :: Action a b -> (b -> Bool) -> Action a c -> Action a c
 when a1 pred a2 = until a1 pred >> a2
 
-action :: (ActionParam a) => a -> Filter b -> Action IO b
-action = action'
+---test
+descInstance = describeInstances (def :: DI.DescribeInstances) instanceId
 
-action' :: (ActionParam a, MonadIO m) => a -> Filter b -> Action m b
-action' p f = liftIO $ runWithFilter param f
-  where param = actionParam p
-
-descInstance = action (def :: DI.DescribeInstances) instanceId
-descInstance' = action (def {DI.instanceId = Just ["abc"]}) instanceId
-
-reqSpot = action (getDefault "0.01" "ami-204ff921" M1_small) spotInstanceRequestId
-spotState id = action (def { DSIR.spotInstanceRequestId = Just [id] }) state
-descSpot id = action (def { DSIR.spotInstanceRequestId = Just [id] }) instanceId
-
-requestSpot = do
-  rqId <- reqSpot
-  when (spotState rqId) (== "active") (descSpot rqId)
-
-descSnapshots = action (def :: DS.DescribeSnapshots) (findContents "snapshotId")
-
-descSnapshots' = action (def {DS.owner = Just ["abc"]}) (findContents "snapshotId")
+reqspot = do
+  rqId <- requestSpotInstances (RSI.getDefault "1.01" "ami-249a2525" RSI.M1_small) spotInstanceRequestId
+  when (describeSpotInstanceRequests (def { DSIR.spotInstanceRequestId = Just [rqId] }) state)
+       (== "active")
+       (describeSpotInstanceRequests (def { DSIR.spotInstanceRequestId = Just [rqId] }) instanceId)

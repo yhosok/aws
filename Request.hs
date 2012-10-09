@@ -4,6 +4,7 @@ module Request where
 import ClassyPrelude
 import Data.Time
 import Network.HTTP.Types (QueryText)
+import Data.List (zipWith)
 
 import Util
 
