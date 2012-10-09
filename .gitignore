@@ -10,3 +10,4 @@ static/tmp
 .dist-scion
 cabal-dev
 tmp
+TAGS
