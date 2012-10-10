@@ -55,29 +55,33 @@ runAction (Free (DescribeInstances p fil f)) =  runAction' p fil f
 runAction (Free (DescribeSnapshots p fil f)) =  runAction' p fil f
 runAction (Free (RequestSpotInstances p fil f))  =  runAction' p fil f
 runAction (Free (DescribeSpotInstanceRequests p fil f)) = runAction' p fil f
-runAction (Free (Wait t)) = liftIO $ sleep 10 >> runAction t
+runAction (Free (Wait t)) = sleep 10 >> runAction t
 runAction (Free Exit) = print "done"
 
 runAction' p filter f = runActionAws p filter >>= runAction . f
 
-runActionAws p filter = liftIO $ runWithFilter param filter
+runActionAws p filter = runWithFilter param filter
   where param = actionParam p
 
--- showProgram :: (Show r) => Action Text r -> Text
--- showProgram (Pure r) = 
---   "return " ++ show r ++ "\n"
--- showProgram (Free (DescribeInstances p fil f)) =
---   "DescribeInstances\n" ++ showProgram (f "")
--- showProgram (Free (DescribeSnapshots p fil f)) = 
---   "DescribeSnapshots\n" ++ showProgram (f "")
--- showProgram (Free (RequestSpotInstances p fil f)) =
---   "RequestSpotInstances\n" ++ showProgram (f "")
--- showProgram (Free (DescribeSpotInstanceRequests p fil f)) =
---   "DescribeSpotInstanceRequests\n" ++ showProgram (f "")
--- showProgram (Free (Wait r)) =
---   "wait...\n " ++ showProgram r
--- showProgram (Free Exit) =
---   "exit\n "
+showProgram :: (Show r) => Action Text r -> [Text] -> Text
+showProgram (Pure r) xt = 
+  "return " ++ show r ++ "\n"
+showProgram (Free (DescribeInstances p fil f)) xt =
+  showProgram' "DescribeInstances\n" f xt
+showProgram (Free (DescribeSnapshots p fil f)) xt = 
+  showProgram' "DescribeSnapshots\n" f xt
+showProgram (Free (RequestSpotInstances p fil f)) xt =
+  showProgram' "RequestSpotInstances\n" f xt
+showProgram (Free (DescribeSpotInstanceRequests p fil f)) xt =
+  showProgram' "DescribeSpotInstanceRequests\n" f xt
+showProgram (Free (Wait r)) t =
+  "wait...\n " ++ showProgram r t
+showProgram (Free Exit) t =
+  "exit\n "
+
+showProgram' :: (Show r) => Text -> (Text -> Action Text r) -> [Text] -> Text
+showProgram' log f [] = log
+showProgram' log f (x:xt) = log ++ showProgram (f x) xt
 
 until :: Action a b -> (b -> Bool) -> Action a b
 until a pred = do
@@ -97,3 +101,5 @@ reqspot = do
   when (describeSpotInstanceRequests (def { DSIR.spotInstanceRequestId = Just [rqId] }) state)
        (== "active")
        (describeSpotInstanceRequests (def { DSIR.spotInstanceRequestId = Just [rqId] }) instanceId)
+
+-- showProgram reqspot $ replicate 10 "" ++ ["active","ami-0001"]
